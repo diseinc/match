@@ -1,0 +1,18 @@
+{
+  "name": "@dise/match",
+  "version": "1.0.0",
+  "description": "An expressive pattern matching DSL for JavaScript",
+  "main": "src/index.js",
+  "repository": "git@bitbucket.org:diseinc/match",
+  "author": "Emil Johnsen <emil.johnsen@dise.com>",
+  "license": "MIT",
+  "private": true,
+  "engines": { "node": ">=8.9.0" },
+  "scripts": {
+    "test": "./node_modules/.bin/mocha ./src/spec.js ./src/**/spec.js  --recursive"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.1.1"
+  }
+}
