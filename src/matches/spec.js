@@ -45,4 +45,19 @@ describe('matches', () => {
     expect(matchingMultiple([_, 2])).to.be.true;
     expect(matchingMultiple([_, _])).to.be.true;
   });
+
+  it('should match on regex', () => {
+    const matchOn = matches('foobar');
+
+    expect(matchOn(/foo/)).to.be.true;
+    expect(matchOn(/baz/)).to.be.false;
+  });
+
+
+  it('should match on regex when matchee is an array', () => {
+    const matchOnArray = matches(['foobar', 15]);
+
+    expect(matchOnArray([/foo/, _])).to.be.true;
+    expect(matchOnArray([/baz/, _])).to.be.false;
+  });
 });
