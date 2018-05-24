@@ -2,11 +2,15 @@ const _ = Symbol.for('_');
 const unwrap = require('../unwrap');
 
 function regex(string, pattern) {
-  if (string.match) {
-    return string.match(pattern) !== null;
+  if (!(pattern instanceof RegExp)) {
+    return false;
   }
 
-  return false;
+  if (typeof string === 'symbol') {
+    return false;
+  }
+
+  return String(string).search(pattern) >= 0;
 }
 
 module.exports = function matches(s0) {

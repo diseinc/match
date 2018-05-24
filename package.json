@@ -1,6 +1,6 @@
 {
   "name": "@dise/match",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "An expressive pattern matching DSL for JavaScript",
   "main": "src/index.js",
   "repository": "git@bitbucket.org:diseinc/match",

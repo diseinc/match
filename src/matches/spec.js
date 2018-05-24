@@ -53,11 +53,33 @@ describe('matches', () => {
     expect(matchOn(/baz/)).to.be.false;
   });
 
-
+1
   it('should match on regex when matchee is an array', () => {
     const matchOnArray = matches(['foobar', 15]);
 
     expect(matchOnArray([/foo/, _])).to.be.true;
     expect(matchOnArray([/baz/, _])).to.be.false;
+  });
+
+  it('should match on regex when value is a number', () => {
+    const matchOnNumber = matches(299);
+
+    expect(matchOnNumber(/^2/)).to.be.true;
+    expect(matchOnNumber(/300/)).to.be.false;
+  });
+  it('should not match on regex when value is a symbol', () => {
+    const yes = Symbol.for('yes');
+    const no = Symbol.for('no');
+    const matchOnSymbol = matches(yes);
+
+    expect(matchOnSymbol([/yes/, _])).to.be.false;
+    expect(matchOnSymbol([/Symbol\(yes\)/, _])).to.be.false;
+    expect(matchOnSymbol([/no/, _])).to.be.false;
+  });
+  it('should match on regex when value implements toString', () => {
+    const withToString = { toString() { return 'TO_STRING'; } };
+    const matchOnToString = matches(withToString);
+
+    expect(matchOnToString(/TO_STRING/)).to.be.true;
   });
 });
