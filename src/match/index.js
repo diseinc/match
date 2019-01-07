@@ -48,7 +48,7 @@ function evaluate(clauses, value) {
   return matchingClause[1](value);
 };
 
-module.exports = function match(legacyCond, legacyExec = false) {
+module.exports = function match(legacyCond, legacyExec) {
   const clauses = [];
 
 
