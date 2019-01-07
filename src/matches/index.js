@@ -1,5 +1,4 @@
 const _ = Symbol.for('_');
-const unwrap = require('../unwrap');
 
 function regex(string, pattern) {
   if (!(pattern instanceof RegExp)) {
@@ -15,8 +14,8 @@ function regex(string, pattern) {
 
 module.exports = function matches(s0) {
   return function(s1) {
-    const v0 = unwrap(s0).slice();
-    const v1 = unwrap(s1).slice();
+    const v0 = [].concat(s0);
+    const v1 = [].concat(s1);
 
     if (v1.length > v0.length) { return false; }
 

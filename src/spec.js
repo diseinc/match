@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const { ok, err, _, unwrap, matches, match } = require('./index');
+const { ok, err, _, matches, match } = require('./index');
 
 describe('exports', () => {
   it('should export symbol ok', () => {
@@ -26,9 +26,5 @@ describe('exports', () => {
   it('should export function matches', () => {
     expect(matches).to.not.be.undefined;
     expect(matches).to.be.a('function');
-  });
-  it('should export function unwrap', () => {
-    expect(unwrap).to.not.be.undefined;
-    expect(unwrap).to.be.a('function');
   });
 });
