@@ -1,7 +1,9 @@
 const _ = Symbol.for('_');
 const matches = require('../matches');
 
-module.exports = function match(term) {
+const NoMatchingClauseError = new Error('No matching clause could be found');
+
+function valueFirstMatch(term) {
   const comparator = matches(term);
   let fn = null;
 
@@ -27,6 +29,48 @@ module.exports = function match(term) {
     if (cond === _) {
       return fn.call(this, term);
     }
+
+    return clause;
+  }
+};
+
+function evaluate(clauses, value) {
+  const matchingClause = clauses.find(clause => {
+    const [cond, exec] = clause;
+
+    return matches(value)(cond);
+  });
+
+  if (!matchingClause) {
+    throw NoMatchingClauseError;
+  }
+
+  return matchingClause[1](value);
+};
+
+module.exports = function match(legacyCond, legacyExec = false) {
+  const clauses = [];
+
+
+  if (!legacyExec) {
+    // We are in value-first mode. Aaaaaaah.
+    // 'legacyCond' is now 'term', or value. Defer to legacy function.
+    return valueFirstMatch(legacyCond);
+  }
+  else {
+    // Since we can't recurse like we want't, the first is to push
+    // the clause onto the stack.
+    clauses.push([legacyCond, legacyExec]);
+  }
+
+  return function clause(cond, exec) {
+    if (!exec) {
+      // Here, exec = false means that it's time to evaluate.
+      // 'cond' is the submitted value;
+      return evaluate(clauses, cond);
+    }
+
+    clauses.push([cond, exec]);
 
     return clause;
   }
