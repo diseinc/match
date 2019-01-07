@@ -57,5 +57,11 @@ describe('match', () => {
 
       expect(() => matches(4)).to.throw(expected);
     });
+
+    it('should raise an error when no clauses are provided', () => {
+      const expected = /no clauses provided to match against/i;
+
+      expect(() => match(123)).to.throw(expected);
+    });
   });
 });
