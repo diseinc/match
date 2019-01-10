@@ -63,5 +63,12 @@ describe('match', () => {
 
       expect(() => match(123)).to.throw(expected);
     });
+
+    it('should return value applied to match when matching clause is provided', () => {
+      const matches = match(1, x => x + 2)
+                           (2, x => x);
+
+      expect(matches(1)).to.equal(3);
+    });
   });
 });
