@@ -1,4 +1,3 @@
-const _ = Symbol.for('_');
 const matches = require('../matches');
 
 
@@ -9,6 +8,14 @@ function curry(fn) {
       : collect.bind(null, ...args)
   }
 };
+
+// lol
+const curry2 = (proxy => fn => proxy(fn)(proxy))(
+  _fn => _pr => (...args) =>
+  args.length >= _fn.length
+    ? _fn(...args)
+    : _pr(_fn)(_pr).bind(null, ...args)
+);
 
 // Result
 const Err = x => ({
@@ -54,7 +61,6 @@ const None = _ => ({
 
 const First = option => ({
   fold: f => f(option),
-
   concat: found =>
     option.isNone ? found : First(option),
     inspect: () => `First(${option})`
@@ -66,14 +72,6 @@ const foldMap = curry((list, f, empty) =>
   empty
     ? list.reduce((m, n, i) => m.concat(f(n, i)), empty)
     : list.map(f).reduce((m, n) => m.concat(n)));
-
-// lol
-const curry2 = (proxy => fn => proxy(fn)(proxy))(
-  _fn => _pr => (...args) =>
-  args.length >= _fn.length
-    ? _fn(...args)
-    : _pr(_fn)(_pr).bind(null, ...args)
-);
 
 const _throw = e => { throw e; };
 const _return = x => x;
@@ -92,16 +90,14 @@ const NoMatchingClauseError = new Error('No matching clause could be found');
 const NoClausesProvidedError = new Error('No clauses provided to match against');
 
 function evaluate(clauses, value) {
-  const matchesValue = matches(value);
+  const matchesClause = ([c]) => matches(value)(c);
 
   return Ok(clauses)
     .chain(cs => cs.length
       ? Ok(cs)
       : Err(NoClausesProvidedError)
     )
-    .chain(
-      find(([c]) => matchesValue(c))
-    )
+    .chain(find(matchesClause))
     .fold(e =>
       e.isNone
         ? Err(NoMatchingClauseError)
