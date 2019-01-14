@@ -7,7 +7,9 @@
   "author": "Emil Johnsen <emil.johnsen@dise.com>",
   "license": "MIT",
   "private": true,
-  "engines": { "node": ">=8.9.0" },
+  "engines": {
+    "node": ">=8.9.0"
+  },
   "scripts": {
     "test": "./node_modules/.bin/mocha ./src/spec.js ./src/**/spec.js  --recursive"
   },
