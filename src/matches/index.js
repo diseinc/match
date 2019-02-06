@@ -12,6 +12,14 @@ function regex(string, pattern) {
   return String(string).search(pattern) >= 0;
 }
 
+function equals(a, b) {
+  return a === b;
+}
+
+function catchAll(a, b) {
+  return b === _;
+}
+
 module.exports = function matches(s0) {
   return function(s1) {
     const v0 = [].concat(s0);
@@ -28,8 +36,8 @@ module.exports = function matches(s0) {
 
       m = (
         regex(a, b) ||
-        a === b     ||
-        b === _
+        equals(a, b)||
+        catchAll(a, b)
       );
     }
 
