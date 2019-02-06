@@ -7,7 +7,7 @@ It runs both in the browser and via Node, but requires support for ES205+ featur
 ### Via package manager
 Match is published on https://npmjs.org and can be installed via package managers such as NPM or Yarn. 
 ```bash
-$ npm install pattern-match
+$ npm install @svartkonst/match
 ```
 ### Manual installation
 There is currently no browser-ready, single-file, distribution available, but the package can be downloaded and included via `require` or `import` in a compatible environment. 
