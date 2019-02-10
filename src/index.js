@@ -1,5 +1,4 @@
-const matches = require('./matches');
 const match = require('./match');
 
 
-module.exports = { match };
+module.exports = match;
