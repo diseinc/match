@@ -1,6 +1,6 @@
 {
   "name": "@svartkonst/match",
-  "version": "1.0.2",
+  "version": "1.1.2",
   "description": "An expressive pattern-matching DSL",
   "main": "src/index.js",
   "repository": "https://gitlab.com/svartkonst/match",
