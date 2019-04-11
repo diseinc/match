@@ -76,10 +76,36 @@ describe('matches', () => {
     expect(matchOnSymbol([/Symbol\(yes\)/, _])).to.be.false;
     expect(matchOnSymbol([/no/, _])).to.be.false;
   });
+
   it('should match on regex when value implements toString', () => {
     const withToString = { toString() { return 'TO_STRING'; } };
     const matchOnToString = matches(withToString);
 
     expect(matchOnToString(/TO_STRING/)).to.be.true;
+  });
+
+  it('should apply value when condition is a function', () => {
+    let value;
+
+    const fn = (matchAgainst) => {
+      value = matchAgainst;
+      return true;
+    }
+
+    matches('some value')(fn);
+
+    expect(value).to.equal('some value');
+  });
+
+  it('should match on function, when function returns true', () => {
+    const fnTrue = () => true;
+
+    expect(matches(_)(fnTrue)).to.be.true;
+  });
+
+  it('should not match on function, when function returns false', () => {
+    const fnFalse = () => false;
+
+    expect(matches(_)(fnFalse)).to.be.false;
   });
 });

@@ -1,5 +1,13 @@
 const _ = Symbol.for('_');
 
+function fun(value, fn) {
+  if (typeof fn !== 'function') {
+    return false;
+  }
+
+  return fn(value);
+}
+
 function regex(string, pattern) {
   if (!(pattern instanceof RegExp)) {
     return false;
@@ -31,12 +39,14 @@ module.exports = function matches(s0) {
     let l = v1.length;
 
     while (m && l --> 0) {
+
       const a = v0.shift();
       const b = v1.shift();
 
       m = (
-        regex(a, b) ||
-        equals(a, b)||
+        fun(a, b)     ||
+        regex(a, b)   ||
+        equals(a, b)  ||
         catchAll(a, b)
       );
     }
