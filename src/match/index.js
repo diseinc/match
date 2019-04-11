@@ -39,7 +39,7 @@ function evaluate(haystack, needle) {
 
 
 const match =
-  haystack  =>
+  haystack =>
     (a, b) => b
       ? match(haystack.concat([[a, b]]))
       : evaluate(haystack, a);

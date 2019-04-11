@@ -20,6 +20,32 @@ function regex(string, pattern) {
   return String(string).search(pattern) >= 0;
 }
 
+/**
+ * Returns true if condition is a subset of, or equal to needle,
+ * shallowly. E.g:
+ * * ------------------------------- *
+ * |  needle   | condition | result  |
+ * | --------- | --------- | ------- |
+ * |  { a }    | { a }     | true    |
+ * |  { a, b } | { a }     | true    |
+ * |  { a, b } | { c }     | false   |
+ * |  { a }    | { a, c }  | false   |
+ * * ------------------------------- *
+ */
+function obj(needle, condition) {
+  if (typeof needle !== 'object')   return false;
+  if (typeof condition !== 'object') return false;
+
+  const conditionKeys = Object.keys(condition);
+
+  for (const k of conditionKeys) {
+    if (!needle.hasOwnProperty(k))    return false;
+    if (!needle[k] === condition[k])  return false;
+  }
+
+  return true;
+}
+
 function equals(a, b) {
   return a === b;
 }
@@ -45,6 +71,7 @@ module.exports = function matches(s0) {
 
       m = (
         fun(a, b)     ||
+        obj(a, b)     ||
         regex(a, b)   ||
         equals(a, b)  ||
         catchAll(a, b)
