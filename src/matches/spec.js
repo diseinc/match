@@ -108,4 +108,28 @@ describe('matches', () => {
 
     expect(matches(_)(fnFalse)).to.be.false;
   });
+
+  it('should match when needle is an object and condition is a subset', () => {
+    const matched = matches({ a: 1, b: 2 })({ a: 1 });
+
+    expect(matched).to.be.true;
+  });
+
+  it('should match when needle is an object and shallowly equals condition', () => {
+    const matched = matches({ a: 1, b: 2 })({ a: 1, b: 2 });
+
+    expect(matched).to.be.true;
+  });
+
+  it('should not match when needle is an object and condition is a superset', () => {
+    const matched = matches({ a: 1 })({ a: 1, b: 2 });
+
+    expect(matched).to.be.false;
+  });
+
+  it('should not match when needle and condition are not equal', () => {
+    const matched = matches({ a: 1 })({ b: 1 });
+
+    expect(matched).to.be.false;
+  });
 });
