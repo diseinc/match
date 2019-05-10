@@ -22,114 +22,170 @@ describe('matches', () => {
     expect(matchTerm([_, _])).to.be.false;
   });
 
-  it('should match on full equality', () => {
-    const matchingSingle = matches(5);
-    const matchingMultiple = matches([1, 2, 3]);
+  describe('Basic', () => {
+    it('x = x', () => {
+      const matchingSingle = matches(5);
 
-    expect(matchingSingle(5)).to.be.true;
-    expect(matchingMultiple([1, 2, 3])).to.be.true;
+      expect(matchingSingle(5)).to.be.true;
+    });
+    it('[x] = x', () => {
+      const matching = matches(5);
+
+      expect(matching([5])).to.be.true;
+    });
   });
 
-  it('should match on partial left-to-right matches', () => {
-    const matchingSubset = matches([1, 2, 3]);
 
-    expect(matchingSubset([1, 2])).to.be.true;
-    expect(matchingSubset([2, 3])).to.be.false;
+  describe('Array', () => {
+    it('[a, b] = [a, b]', () => {
+      const matchingMultiple = matches([1, 2]);
+
+      expect(matchingMultiple([1, 2])).to.be.true;
+    });
+
+    it('[a, b] = [a, b, c]', () => {
+      const matchingSubset = matches([1, 2, 3]);
+
+      expect(matchingSubset([1, 2])).to.be.true;
+    });
+
+    it('[b, c] != [a, b, c]', () => {
+      const matchingSubset = matches([1, 2, 3]);
+
+      expect(matchingSubset([2, 3])).to.be.false;
+    });
+
+    it('[a, _] = [a, b]', () => {
+      const matching = matches([1, 2]);
+
+      expect(matching([1, _])).to.be.true;
+    });
+    it('[_, b] = [a, b]', () => {
+      const matching = matches([1, 2]);
+
+      expect(matching([_, 2])).to.be.true;
+    });
+
+    it('[_, _] = [a, b]', () => {
+      const matching = matches([1, 2]);
+
+      expect(matching([_, _])).to.be.true;
+    });
+
+    it('[] = []', () => {
+      expect(matches([])([])).to.be.true;
+    });
+
+    it('[] != [a, b]', () => {
+      expect(matches([1, 2])([])).to.be.false;
+    });
   });
 
-  it('should always match on _', () => {
-    const matchingMultiple = matches([1, 2]);
-
-    expect(matchingMultiple([1, 2])).to.be.true;
-    expect(matchingMultiple([1, _])).to.be.true;
-    expect(matchingMultiple([_, 2])).to.be.true;
-    expect(matchingMultiple([_, _])).to.be.true;
-  });
-
-  it('should match on regex', () => {
+  describe('Regex', () => {
     const matchOn = matches('foobar');
-
-    expect(matchOn(/foo/)).to.be.true;
-    expect(matchOn(/baz/)).to.be.false;
-  });
-
-1
-  it('should match on regex when matchee is an array', () => {
     const matchOnArray = matches(['foobar', 15]);
-
-    expect(matchOnArray([/foo/, _])).to.be.true;
-    expect(matchOnArray([/baz/, _])).to.be.false;
-  });
-
-  it('should match on regex when value is a number', () => {
     const matchOnNumber = matches(299);
 
-    expect(matchOnNumber(/^2/)).to.be.true;
-    expect(matchOnNumber(/300/)).to.be.false;
-  });
-  it('should not match on regex when value is a symbol', () => {
     const yes = Symbol.for('yes');
-    const no = Symbol.for('no');
     const matchOnSymbol = matches(yes);
 
-    expect(matchOnSymbol([/yes/, _])).to.be.false;
-    expect(matchOnSymbol([/Symbol\(yes\)/, _])).to.be.false;
-    expect(matchOnSymbol([/no/, _])).to.be.false;
+    it('/foo/ = foo', () => {
+      expect(matchOn(/foo/)).to.be.true;
+    });
+
+    it('/qux/ != foo', () => {
+      expect(matchOn(/qux/)).to.be.false;
+    });
+
+    it('[/foo/, _] = [foobar, x]', () => {
+      expect(matchOnArray([/foo/, _])).to.be.true;
+    });
+
+    it('[/qux/, _] = [foobar, x]', () => {
+      expect(matchOnArray([/qux/, _])).to.be.false;
+    });
+
+    it('/^2/ = 299', () => {
+      expect(matchOnNumber(/^2/)).to.be.true;
+    });
+    it('/300/ != 299', () => {
+      expect(matchOnNumber(/300/)).to.be.false;
+    });
+
+    it('Symbol.for(yes) != /yes/', () => {
+      expect(matchOnSymbol([/yes/, _])).to.be.false;
+    });
+
+    it('/TO_STRING/ = toString() -> TO_STRING', () => {
+      const withToString = { toString() { return 'TO_STRING'; } };
+      const matchOnToString = matches(withToString);
+
+      expect(matchOnToString(/TO_STRING/)).to.be.true;
+    });
   });
 
-  it('should match on regex when value implements toString', () => {
-    const withToString = { toString() { return 'TO_STRING'; } };
-    const matchOnToString = matches(withToString);
+  describe('Function', () => {
+    it('should apply value when condition is a function', () => {
+      let value;
 
-    expect(matchOnToString(/TO_STRING/)).to.be.true;
+      const fn = (matchAgainst) => {
+        value = matchAgainst;
+        return true;
+      }
+
+      matches('some value')(fn);
+
+      expect(value).to.equal('some value');
+    });
+
+    it('x -> true = x', () => {
+      const fnTrue = () => true;
+
+      expect(matches(1)(fnTrue)).to.be.true;
+    });
+
+    it('x -> false != x', () => {
+      const fnFalse = () => false;
+
+      expect(matches(1)(fnFalse)).to.be.false;
+    });
+
+    it('(x -> x > 3) = 5', () => {
+      const fn = x => x > 3;
+
+      expect(matches(5)(fn)).to.be.true;
+    });
   });
 
-  it('should apply value when condition is a function', () => {
-    let value;
+  describe('Object', () => {
+    it('{ a: 1 } = { a: 1, b: 2 }', () => {
+      const matched = matches({ a: 1, b: 2 })({ a: 1 });
 
-    const fn = (matchAgainst) => {
-      value = matchAgainst;
-      return true;
-    }
+      expect(matched).to.be.true;
+    });
 
-    matches('some value')(fn);
+    it('{ a: 1, b: 2 } = { a: 1, b: 2 }', () => {
+      const matched = matches({ a: 1, b: 2 })({ a: 1, b: 2 });
 
-    expect(value).to.equal('some value');
-  });
+      expect(matched).to.be.true;
+    });
 
-  it('should match on function, when function returns true', () => {
-    const fnTrue = () => true;
+    it('{ a: 1, b: 2 } != { a: 1 }', () => {
+      const matched = matches({ a: 1 })({ a: 1, b: 2 });
 
-    expect(matches(_)(fnTrue)).to.be.true;
-  });
+      expect(matched).to.be.false;
+    });
 
-  it('should not match on function, when function returns false', () => {
-    const fnFalse = () => false;
+    it('{ a: 1 } != { b: 1 }', () => {
+      const matched = matches({ b: 1 })({ a: 1 });
 
-    expect(matches(_)(fnFalse)).to.be.false;
-  });
+      expect(matched).to.be.false;
+    });
 
-  it('should match when needle is an object and condition is a subset', () => {
-    const matched = matches({ a: 1, b: 2 })({ a: 1 });
+    it('{ a: 1 } != { a: 2 }', () => {
+      const matched = matches({ a: 2 })({ a: 1 });
 
-    expect(matched).to.be.true;
-  });
-
-  it('should match when needle is an object and shallowly equals condition', () => {
-    const matched = matches({ a: 1, b: 2 })({ a: 1, b: 2 });
-
-    expect(matched).to.be.true;
-  });
-
-  it('should not match when needle is an object and condition is a superset', () => {
-    const matched = matches({ a: 1 })({ a: 1, b: 2 });
-
-    expect(matched).to.be.false;
-  });
-
-  it('should not match when needle and condition are not equal', () => {
-    const matched = matches({ a: 1 })({ b: 1 });
-
-    expect(matched).to.be.false;
+      expect(matched).to.be.false;
+    });
   });
 });

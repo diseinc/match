@@ -39,8 +39,8 @@ function obj(needle, condition) {
   const conditionKeys = Object.keys(condition);
 
   for (const k of conditionKeys) {
-    if (!needle.hasOwnProperty(k))    return false;
-    if (!needle[k] === condition[k])  return false;
+    if (!needle.hasOwnProperty(k))      return false;
+    if (!(needle[k] === condition[k]))  return false;
   }
 
   return true;
