@@ -33,7 +33,7 @@ function regex(string, pattern) {
  * * ------------------------------- *
  */
 function obj(needle, condition) {
-  if (typeof needle !== 'object')   return false;
+  if (typeof needle !== 'object')    return false;
   if (typeof condition !== 'object') return false;
 
   const conditionKeys = Object.keys(condition);
@@ -54,30 +54,51 @@ function catchAll(a, b) {
   return b === _;
 }
 
+/**
+ * @todo use some sort of monadic structure for evaluation.
+ *        that would allow us to use false as a default, while
+ *        being able to break as soon as we get a positive hit.
+ *
+ *        maybe.
+ *        maybe not.
+ *
+ *
+ * @todo add better support for checking tpyes against type and instances against instances?
+ * @todo stricter equality checks? don't turn everything into an array?
+ */
 module.exports = function matches(s0) {
   return function(s1) {
     const v0 = [].concat(s0);
     const v1 = [].concat(s1);
 
-    if (v1.length > v0.length) { return false; }
+    /**
+     * Handle a few edge cases, like
+     * _    matches a      -> true
+     * [a]  matches [a, b] -> false
+     * []   matches []     -> true
+     * []   matches [a]    -> false
+     */
+    if (s1 === _)              return true;
+    if (v1.length > v0.length) return false;
+    if (v1.length === 0 && v0.length === 0) return true;
+    if (v1.length === 0 && v0.length > 0) return false;
 
-    let m = true;
+    let matched = true;
     let l = v1.length;
 
-    while (m && l --> 0) {
-
+    while (matched && l --> 0) {
       const a = v0.shift();
       const b = v1.shift();
 
-      m = (
-        fun(a, b)     ||
-        obj(a, b)     ||
-        regex(a, b)   ||
-        equals(a, b)  ||
+      matched = (
+        fun(a, b)       ||
+        obj(a, b)       ||
+        regex(a, b)     ||
+        equals(a, b)    ||
         catchAll(a, b)
       );
     }
 
-    return m;
+    return matched;
   }
 };
