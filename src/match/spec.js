@@ -22,7 +22,7 @@ describe('match', () => {
     const result = match([1, 2],  () => "first match")
                          (_,      () => "catchall");
 
-    expect(result([1, 2, 3])).to.equal("first match");
+    expect(result([1, 2])).to.equal("first match");
   });
 
   it('should return catchall value if nothing else matches', () => {
@@ -30,6 +30,38 @@ describe('match', () => {
                         (_,      () => "catchall");
 
     expect(result([1, 2, 3])).to.equal("catchall");
+  });
+
+  describe('Comparisons', () => {
+    it('should match on object subsets', () => {
+      const value = { a: 1, b: 2 };
+
+      const result = match({ a: 1 }, () => true)
+      (_,        () => false)
+      (value);
+
+      expect(result).to.be.true;
+    });
+
+    it('it should work when value is an array and condition is a function', () => {
+      const incl = a => as => as.indexOf(a) > -1;
+      const values = [1, 2, 3];
+      const matches = match(incl(3), () => true)
+                           (_, () => false);
+
+      expect(matches(values)).to.be.true;
+    });
+
+
+    it('it should work when value and condition are empty arrays', () => {
+      const incl = a => as => as.indexOf(a) > -1;
+      const values = [];
+      const matches = match(incl(3), () => false)
+                           ([],      () => true)
+                           (_,       () => false);
+
+      expect(matches(values)).to.be.true;
+    });
   });
 
   describe('Value-Last approach', () => {

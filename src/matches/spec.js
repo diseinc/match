@@ -4,15 +4,13 @@ const matches = require('./index');
 const _ = Symbol.for('_');
 
 describe('matches', () => {
-  it('should be a function of length 1', () => {
-    expect(matches).to.have.property('length');
-    expect(matches).to.have.lengthOf(1);
+  it('should be a function', () => {
+    expect(matches).to.be.a('function');
   });
 
-  it('should return a function of length 1', () => {
+  it('should return a function', () => {
     const matchTerm = matches(true);
-    expect(matchTerm).to.have.property('length');
-    expect(matchTerm).to.have.lengthOf(1);
+    expect(matchTerm).to.be.a('function');;
   });
 
   it('should never match when the second condition is longer than the first', () => {
@@ -28,10 +26,17 @@ describe('matches', () => {
 
       expect(matchingSingle(5)).to.be.true;
     });
-    it('[x] = x', () => {
+
+    it('[x] != x', () => {
       const matching = matches(5);
 
-      expect(matching([5])).to.be.true;
+      expect(matching([5])).to.be.false;
+    });
+
+    it('x != [x]', () => {
+      const matching = matches([5]);
+
+      expect(matching(5)).to.be.false;
     });
   });
 
@@ -43,41 +48,41 @@ describe('matches', () => {
       expect(matchingMultiple([1, 2])).to.be.true;
     });
 
-    it('[a, b] = [a, b, c]', () => {
-      const matchingSubset = matches([1, 2, 3]);
+    it('[a, b] != [a, b, c]', () => {
+      const matchingSubset = matches([1, 2]);
 
-      expect(matchingSubset([1, 2])).to.be.true;
+      expect(matchingSubset([1, 2, 3])).to.be.false;
     });
 
     it('[b, c] != [a, b, c]', () => {
-      const matchingSubset = matches([1, 2, 3]);
+      const matchingSubset = matches([2, 3]);
 
-      expect(matchingSubset([2, 3])).to.be.false;
+      expect(matchingSubset([1, 2, 3])).to.be.false;
     });
 
-    it('[a, _] = [a, b]', () => {
+    it('[a, b] = [a, _]', () => {
       const matching = matches([1, 2]);
 
       expect(matching([1, _])).to.be.true;
     });
-    it('[_, b] = [a, b]', () => {
+    it('[a, b] = [_, b]', () => {
       const matching = matches([1, 2]);
 
       expect(matching([_, 2])).to.be.true;
     });
 
-    it('[_, _] = [a, b]', () => {
+    it('[a, b] = [_, _]', () => {
       const matching = matches([1, 2]);
 
       expect(matching([_, _])).to.be.true;
     });
 
     it('[] = []', () => {
-      expect(matches([])([])).to.be.true;
+      expect(matches([], [])).to.be.true;
     });
 
-    it('[] != [a, b]', () => {
-      expect(matches([1, 2])([])).to.be.false;
+    it('[a, b] != []', () => {
+      expect(matches([1, 2], [])).to.be.false;
     });
   });
 
@@ -89,34 +94,30 @@ describe('matches', () => {
     const yes = Symbol.for('yes');
     const matchOnSymbol = matches(yes);
 
-    it('/foo/ = foo', () => {
+    it('foobar = /foo/', () => {
       expect(matchOn(/foo/)).to.be.true;
     });
 
-    it('/qux/ != foo', () => {
+    it('foobar != /qux/', () => {
       expect(matchOn(/qux/)).to.be.false;
     });
 
-    it('[/foo/, _] = [foobar, x]', () => {
+    it('[foobar, x] = [/foo/, _]', () => {
       expect(matchOnArray([/foo/, _])).to.be.true;
     });
 
-    it('[/qux/, _] = [foobar, x]', () => {
+    it('[foobar, x] = [/qux/, _]', () => {
       expect(matchOnArray([/qux/, _])).to.be.false;
     });
 
-    it('/^2/ = 299', () => {
+    it('299 = /^2/', () => {
       expect(matchOnNumber(/^2/)).to.be.true;
     });
-    it('/300/ != 299', () => {
+    it('299 != /300/', () => {
       expect(matchOnNumber(/300/)).to.be.false;
     });
 
-    it('Symbol.for(yes) != /yes/', () => {
-      expect(matchOnSymbol([/yes/, _])).to.be.false;
-    });
-
-    it('/TO_STRING/ = toString() -> TO_STRING', () => {
+    it('toString() -> TO_STRING = /TO_STRING/', () => {
       const withToString = { toString() { return 'TO_STRING'; } };
       const matchOnToString = matches(withToString);
 
@@ -133,57 +134,57 @@ describe('matches', () => {
         return true;
       }
 
-      matches('some value')(fn);
+      matches('some value', fn);
 
       expect(value).to.equal('some value');
     });
 
-    it('x -> true = x', () => {
+    it('x = (x -> true)', () => {
       const fnTrue = () => true;
 
-      expect(matches(1)(fnTrue)).to.be.true;
+      expect(matches(1, fnTrue)).to.be.true;
     });
 
-    it('x -> false != x', () => {
+    it('x != (x -> false)', () => {
       const fnFalse = () => false;
 
-      expect(matches(1)(fnFalse)).to.be.false;
+      expect(matches(1, fnFalse)).to.be.false;
     });
 
     it('(x -> x > 3) = 5', () => {
       const fn = x => x > 3;
 
-      expect(matches(5)(fn)).to.be.true;
+      expect(matches(5, fn)).to.be.true;
     });
   });
 
   describe('Object', () => {
     it('{ a: 1 } = { a: 1, b: 2 }', () => {
-      const matched = matches({ a: 1, b: 2 })({ a: 1 });
+      const matched = matches({ a: 1, b: 2 }, { a: 1 });
 
       expect(matched).to.be.true;
     });
 
     it('{ a: 1, b: 2 } = { a: 1, b: 2 }', () => {
-      const matched = matches({ a: 1, b: 2 })({ a: 1, b: 2 });
+      const matched = matches({ a: 1, b: 2 }, { a: 1, b: 2 });
 
       expect(matched).to.be.true;
     });
 
     it('{ a: 1, b: 2 } != { a: 1 }', () => {
-      const matched = matches({ a: 1 })({ a: 1, b: 2 });
+      const matched = matches({ a: 1 }, { a: 1, b: 2 });
 
       expect(matched).to.be.false;
     });
 
     it('{ a: 1 } != { b: 1 }', () => {
-      const matched = matches({ b: 1 })({ a: 1 });
+      const matched = matches({ b: 1 }, { a: 1 });
 
       expect(matched).to.be.false;
     });
 
     it('{ a: 1 } != { a: 2 }', () => {
-      const matched = matches({ a: 2 })({ a: 1 });
+      const matched = matches({ a: 2 }, { a: 1 });
 
       expect(matched).to.be.false;
     });

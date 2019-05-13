@@ -3,46 +3,26 @@ const matches = require('../matches');
 const NoMatchingClauseError = new Error('No matching clause could be found');
 const NoClausesProvidedError = new Error('No clauses provided to match against');
 
-const Right = x => ({
-  map: f => Right(f(x)),
-  chain: f => f(x),
-  fold: (f, g) => g(x)
-});
+const { fromNullable } = require('../option');
 
-const Left = x => ({
-  map: () => Left(x),
-  chain: () => Left(x),
-  fold: (f, g) => f(x)
-});
+const find = (xs, f) => fromNullable(xs.find(f));
 
-const _throw = e => { throw e; };
-const _return = x => x;
+function evaluate(clauses, value) {
+  if (!clauses.length) throw NoClausesProvidedError;
 
-const matchesClause = needle => ([v, f]) => matches(needle)(v);
-const applyClause = v => ([_, f]) => f(v);
+  const matching_clause = clauses.find(([cond]) => matches(value, cond));
 
-const findClause = f => l =>
-  Right(l.find(f))
-    .chain(c => c
-      ? Right(c)
-      : Left(NoMatchingClauseError));
-
-function evaluate(haystack, needle) {
-  return Right(haystack)
-    .chain(hs => hs.length
-      ? Right(hs)
-      : Left(NoClausesProvidedError))
-    .chain(findClause(matchesClause(needle)))
-    .map(applyClause(needle))
-    .fold(_throw, _return);
+  return  find(clauses, ([cond]) => matches(value, cond))
+    .match({
+      Some: ([_, fn]) => fn(value),
+      None: _ => { throw NoMatchingClauseError }
+    });
 };
 
-
 const match =
-  haystack =>
-    (a, b) => b
-      ? match(haystack.concat([[a, b]]))
-      : evaluate(haystack, a);
-
+  clauses =>
+    (cond_or_value, fn) => fn
+      ? match(clauses.concat([[cond_or_value, fn]]))
+      : evaluate(clauses, cond_or_value);
 
 module.exports = match([]);
