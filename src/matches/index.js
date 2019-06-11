@@ -19,8 +19,14 @@ function curry(fn) {
 
 function matches(value, cond) {
   if (Array.isArray(value) && Array.isArray(cond)) {
-    return value.length === cond.length
-      && value.every((a, i) => matches(a, cond[i]));
+    const matchingLengths = value.length === cond.length;
+    const matchingElements = value.every((a, i) => {
+      const b = cond[i];
+
+      return matches(a, b);
+    });
+
+    return matchingLengths && matchingElements;
   }
   else {
     return by_function(value, cond)
