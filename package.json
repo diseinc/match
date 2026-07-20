@@ -21,6 +21,10 @@
   "scripts": {
     "test": "mocha ./src/spec.js ./src/**/spec.js  --recursive"
   },
+  "overrides": {
+    "diff": "8.0.4",
+    "serialize-javascript": "7.0.7"
+  },
   "devDependencies": {
     "chai": "^6.2.2",
     "mocha": "^11.7.5"
